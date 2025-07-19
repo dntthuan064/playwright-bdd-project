@@ -36,6 +36,8 @@ playwright-project/
 ├── .gitignore              # Git ignore rules
 ├── package.json            # Project metadata and dependencies
 ├── playwright.config.ts    # Playwright configuration
+├── browserstack.yml        # BrowserStack configuration
+├── browserstack.config.js  # BrowserStack specific configuration
 ├── tsconfig.json           # TypeScript configuration
 ├── yarn.lock               # Yarn lock file
 ```
@@ -78,29 +80,60 @@ playwright-project/
 4. **View reports:**
    - After running tests, open `playwright-report/index.html` in your browser.
 
+## BrowserStack Integration
+
+This project includes BrowserStack integration for cross-browser testing on real devices and browsers. See [BROWSERSTACK_SETUP.md](./BROWSERSTACK_SETUP.md) for detailed setup instructions.
+
+### Quick BrowserStack Setup
+
+1. **Set up environment variables:**
+
+   ```bash
+   BROWSERSTACK_USERNAME=your_username
+   BROWSERSTACK_ACCESS_KEY=your_access_key
+   ```
+
+2. **Run tests on BrowserStack:**
+
+   ```bash
+   yarn e2e:browserstack
+   ```
+
+3. **Run tests on all BrowserStack browsers:**
+
+   ```bash
+   yarn e2e:browserstack-all
+   ```
+
 ## Common Scripts
 
-| Script               | Description                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `yarn e2e`           | Generate specs & run all E2E tests                                                           |
-| `yarn e2e:tag`       | Generate specs & run tests for specific tags                                                 |
-| `yarn e2e:ui`        | Generate specs & run Playwright in UI mode for specific tags                                 |
-| `yarn e2e:debug`     | Generate specs & run Playwright in debug mode for specific tags                              |
-| `yarn e2e:local`     | Use `.env.local` & run all E2E tests                                                         |
-| `yarn e2e:tag-gen`   | Only generate specs for specific tags (no test run)                                          |
-| `yarn e2e:report`    | Show Playwright HTML report                                                                  |
-| `yarn fix`           | Format code                                                                                  |
-| `yarn typecheck`     | Type-check code                                                                              |
-| `yarn e2e_weekly`    | Generate specs & run the weekly E2E suite (skips `@REQUIRED_QA_ALLOWED` & any `${SKIP_TAG}`) |
-| `yarn e2e:tag-local` | Generate specs & run tests for specific tags using `.env.local`                              |
-| `yarn pre-commit`    | Run `lint-staged` before every commit                                                        |
-| `yarn pre-push`      | Run formatter & type-checker before every push                                               |
+| Script                          | Description                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `yarn e2e`                      | Generate specs & run all E2E tests                                                           |
+| `yarn e2e:tag`                  | Generate specs & run tests for specific tags                                                 |
+| `yarn e2e:ui`                   | Generate specs & run Playwright in UI mode for specific tags                                 |
+| `yarn e2e:debug`                | Generate specs & run Playwright in debug mode for specific tags                              |
+| `yarn e2e:local`                | Use `.env.local` & run all E2E tests                                                         |
+| `yarn e2e:tag-gen`              | Only generate specs for specific tags (no test run)                                          |
+| `yarn e2e:report`               | Show Playwright HTML report                                                                  |
+| `yarn e2e:browserstack`         | Run tests on BrowserStack Chrome                                                             |
+| `yarn e2e:browserstack-mobile`  | Run tests on all BrowserStack mobile device                                                  |
+| `yarn e2e:browserstack-desktop` | Run tests on all BrowserStack browsers (Chrome, Firefox, Safari)                             |
+| `yarn e2e:browserstack-iphone`  | Run tests on all BrowserStack browsers (Chrome, Firefox, Safari)                             |
+| `yarn e2e:browserstack-android` | Run tests on all BrowserStack browsers (Chrome, Firefox, Safari)                             |
+| `yarn fix`                      | Format code                                                                                  |
+| `yarn typecheck`                | Type-check code                                                                              |
+| `yarn e2e_weekly`               | Generate specs & run the weekly E2E suite (skips `@REQUIRED_QA_ALLOWED` & any `${SKIP_TAG}`) |
+| `yarn e2e:tag-local`            | Generate specs & run tests for specific tags using `.env.local`                              |
+| `yarn pre-commit`               | Run `lint-staged` before every commit                                                        |
+| `yarn pre-push`                 | Run formatter & type-checker before every push                                               |
 
 ## Customization
 
 - Add new features in `src/features/`.
 - Implement new page objects in `src/pages/`.
 - Extend utilities and types in `src/common/`.
+- Configure BrowserStack settings in `browserstack.yml` and `browserstack.config.js`.
 
 ---
 
@@ -109,3 +142,4 @@ playwright-project/
 - Use only Yarn for dependency management (`yarn.lock`).
 - Set environment variables using the correct syntax for your shell (see above).
 - This project uses Playwright and playwright-bdd for BDD-style E2E testing. No direct cucumber-js usage is required.
+- BrowserStack integration provides access to 100+ real browser-OS combinations for comprehensive testing.
