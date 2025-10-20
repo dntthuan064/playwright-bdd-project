@@ -4,7 +4,7 @@ This project is an end-to-end (E2E) testing framework using Playwright and BDD (
 
 ## Project Structure
 
-```
+```text
 playwright-project/
 │
 ├── .github/                # GitHub workflows and CI/CD configuration
