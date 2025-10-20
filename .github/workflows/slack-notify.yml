@@ -26,9 +26,4 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GITHUB_EVENT_JSON: ${{ toJSON(github.event) }}
-        run: |
-          node --input-type=module --eval "
-          import notifySlack from './slack-webhook.js';
-          const payload = JSON.parse(process.env.GITHUB_EVENT_JSON);
-          await notifySlack(payload);
-          "
+        run: node slack-webhook.js

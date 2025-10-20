@@ -111,4 +111,17 @@ async function notifySlackOnPR(githubPayload) {
   }
 }
 
+// When run directly (not imported), execute the notification
+if (process.env.GITHUB_EVENT_JSON) {
+  const eventJson = process.env.GITHUB_EVENT_JSON
+
+  try {
+    const payload = JSON.parse(eventJson)
+    await notifySlackOnPR(payload)
+  } catch (error) {
+    console.error("[SLACK NOTIFIER] Error processing notification:", error)
+    process.exit(1)
+  }
+}
+
 export default notifySlackOnPR
