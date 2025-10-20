@@ -4,6 +4,10 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+
+env:
+  E2E_BASE_URL: ${{ vars.BASE_URL}}
+
 jobs:
   test:
     timeout-minutes: 60
@@ -20,6 +24,8 @@ jobs:
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
       - name: Run E2E tests
+        env:
+          E2E_BASE_URL: ${{ env.E2E_BASE_URL }}
         run: yarn e2e
       - uses: actions/upload-artifact@v4
         if: always()
