@@ -2,7 +2,7 @@ name: Notify Slack on New PR
 
 on:
   pull_request:
-    types: [opened] # Only runs when a PR is created.
+    types: [opened] # Runs when PR is created only
 
 jobs:
   notify:
@@ -25,9 +25,10 @@ jobs:
       - name: Send notification to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_EVENT_JSON: ${{ toJSON(github.event) }}
         run: |
           node --input-type=module --eval "
           import notifySlack from './slack-webhook.js';
-          const payload = ${{ toJSON(github.event) }};
+          const payload = JSON.parse(process.env.GITHUB_EVENT_JSON);
           await notifySlack(payload);
           "
