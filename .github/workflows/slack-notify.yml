@@ -2,7 +2,7 @@ name: Notify Slack on New PR
 
 on:
   pull_request:
-    types: [opened] # Runs when PR is created only
+    types: [opened]
 
 jobs:
   notify:
@@ -22,8 +22,21 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      # <-- ADD THIS NEW DEBUGGING STEP HERE
+      - name: Check if secret is loaded
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Error: SLACK_WEBHOOK_URL secret is not set!"
+            exit 1
+          else
+            echo "Success: SLACK_WEBHOOK_URL secret is loaded."
+          fi
+
       - name: Send notification to Slack
         env:
+          # This part remains the same
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GITHUB_EVENT_JSON: ${{ toJSON(github.event) }}
         run: node slack-webhook.js
