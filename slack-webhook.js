@@ -10,122 +10,97 @@ dotenv.config()
  */
 async function notifySlackOnPR(githubPayload) {
   try {
-    // Validate payload structure
-    if (!githubPayload || typeof githubPayload !== "object") {
-      console.error("[SLACK NOTIFIER] Invalid payload: expected an object.")
-      return
+    if (!githubPayload?.pull_request || !githubPayload?.repository) {
+      throw new Error("Invalid payload: missing pull_request or repository")
     }
 
-    // Get the Slack Webhook URL from environment variables
-    // SLACK_WEBHOOK_URL should be stored as a secret, not in your code.
     const url = process.env.SLACK_WEBHOOK_URL
     if (!url) {
-      console.error(
-        "[SLACK NOTIFIER] SLACK_WEBHOOK_URL is not defined. Please set it in your environment variables."
-      )
-      return
+      throw new Error("SLACK_WEBHOOK_URL environment variable is not set")
     }
 
-    // Validate required fields in payload
     const { pull_request, repository } = githubPayload
-    if (!pull_request || !repository) {
-      console.error(
-        "[SLACK NOTIFIER] Invalid payload: missing pull_request or repository."
-      )
-      return
-    }
-
-    // Extract the relevant data from the GitHub payload
     const prTitle = pull_request.title || "No Title"
     const prUrl = pull_request.html_url
     const prAuthor = pull_request.user?.login || "Unknown"
 
-    // Build the rich message for Slack using Block Kit
-    const blocks = [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `🚀 *A new Pull Request has been created* 🚀`,
-        },
-      },
-      {
-        type: "divider",
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*Title:* ${prTitle}`,
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*URL:* ${prUrl}`,
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*Author:* ${prAuthor}`,
-        },
-      },
-      {
-        type: "divider",
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*Please help to review!* :thankyou2:`,
-        },
-      },
-    ]
-
-    // Add action button
-    blocks.push({
-      type: "actions",
-      elements: [
+    const message = {
+      blocks: [
         {
-          type: "button",
+          type: "section",
           text: {
-            type: "plain_text",
-            text: "View Pull Request",
-            emoji: true,
-          },
-          url: prUrl,
-          style: "primary",
+            type: "mrkdwn",
+            text: `@here 🚀 *A new pull request has been created*`
+          }
         },
-      ],
-    })
+        {
+          type: "divider"
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Title:* ${prTitle}`
+          }
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*URL:* <${prUrl}>`
+          }
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Author:* ${prAuthor}`
+          }
+        },
+        {
+          type: "divider"
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Please help to review the changes* :thankyou2:`
+          }
+        },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "View Pull Request",
+                emoji: true
+              },
+              url: prUrl,
+              style: "primary"
+            }
+          ]
+        }
+      ]
+    }
 
-    const message = { blocks }
-
-    // Send the message to Slack
     const webhook = new IncomingWebhook(url)
     await webhook.send(message)
-    console.log("[SLACK NOTIFIER] Successfully sent PR notification to Slack.")
-  } catch (err) {
-    console.error(
-      "[SLACK NOTIFIER] Failed to send notification to Slack channel."
-    )
-    console.error(err)
-    throw err
+    console.log("✓ Slack notification sent successfully")
+  } catch (error) {
+    console.error("✗ Failed to send Slack notification:", error.message)
+    throw error
   }
 }
 
-// When run directly (not imported), execute the notification
+// Execute when run directly (not imported)
 if (process.env.GITHUB_EVENT_JSON) {
-  const eventJson = process.env.GITHUB_EVENT_JSON
-
   try {
-    const payload = JSON.parse(eventJson)
+    const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
     await notifySlackOnPR(payload)
   } catch (error) {
-    console.error("[SLACK NOTIFIER] Error processing notification:", error)
+    console.error("✗ Error:", error.message)
     process.exit(1)
   }
 }
