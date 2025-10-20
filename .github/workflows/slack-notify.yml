@@ -1,0 +1,33 @@
+name: Notify Slack on New PR
+
+on:
+  pull_request:
+    types: [opened] # Only runs when a PR is created.
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Send notification to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          node --input-type=module --eval "
+          import notifySlack from './slack-webhook.js';
+          const payload = ${{ toJSON(github.event) }};
+          await notifySlack(payload);
+          "
