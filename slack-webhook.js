@@ -1,7 +1,6 @@
 import { IncomingWebhook } from "@slack/webhook"
 import dotenv from "dotenv"
 
-// https://github.com/motdotla/dotenv
 dotenv.config()
 
 export default async function notifySlackOnPR(githubPayload) {
@@ -95,24 +94,13 @@ export default async function notifySlackOnPR(githubPayload) {
     throw error
   }
 
-  // Add more Webhooks for different channels
-  // url = process.env.SLACK_WEBHOOK_URL_2
-  // const webhook = new IncomingWebhook(url)
-  // await webhook.send(message)
-  // console.log("✓ Slack notification sent successfully")
-  // } catch (error) {
-  //   console.error("✗ Failed to send Slack notification:", error.message)
-  //   throw error
-  // }
 }
 
-// // Execute when run directly (not imported)
-// if (process.env.GITHUB_EVENT_JSON) {
-//   try {
-//     const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
-//     await notifySlackOnPR(payload)
-//   } catch (error) {
-//     console.error("✗ Error:", error.message)
-//     process.exit(1)
-//   }
-// }
+// Execute when run directly
+if (process.env.GITHUB_EVENT_JSON) {
+  const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
+  notifySlackOnPR(payload).catch((error) => {
+    console.error("✗ Error:", error.message)
+    process.exit(1)
+  })
+}
