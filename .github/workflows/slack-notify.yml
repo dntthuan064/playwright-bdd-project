@@ -28,5 +28,5 @@ jobs:
       - name: Send notification to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-          GITHUB_EVENT_JSON: ${{ toJSON(github.event) }}
+          # GITHUB_EVENT_JSON: ${{ toJSON(github.event) }}
         run: node slack-webhook.js
