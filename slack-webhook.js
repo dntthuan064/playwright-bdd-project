@@ -16,9 +16,9 @@ async function notifySlackOnPR(githubPayload) {
     }
 
     const { pull_request } = githubPayload
-    const prTitle = pull_request.title || "No Title"
-    const prUrl = pull_request.html_url
-    const prAuthor = pull_request.user?.login || "Unknown"
+    const prTitle = pull_request?.title || "No Title"
+    const prUrl = pull_request?.html_url || "No URL"
+    const prAuthor = pull_request?.user?.login || "Unknown"
 
     const message = {
       blocks: [
