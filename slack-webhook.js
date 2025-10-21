@@ -3,26 +3,22 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
-/**
- * Sends a Slack notification for a newly created GitHub Pull Request.
- * @param {object} githubPayload The full JSON payload from the GitHub 'pull_request' event.
- * @returns {Promise<void>}
- */
 async function notifySlackOnPR(githubPayload) {
+  let url
   try {
     if (!githubPayload?.pull_request || !githubPayload?.repository) {
       throw new Error("Invalid payload: missing pull_request or repository")
     }
 
-    const url = process.env.SLACK_WEBHOOK_URL
+    url = process.env.SLACK_WEBHOOK_URL
     if (!url) {
       throw new Error("SLACK_WEBHOOK_URL environment variable is not set")
     }
 
-    const { pull_request, repository } = githubPayload
-    const prTitle = pull_request.title || "No Title"
-    const prUrl = pull_request.html_url
-    const prAuthor = pull_request.user?.login || "Unknown"
+    const { pull_request } = githubPayload
+    const prTitle = pull_request?.title || "No Title"
+    const prUrl = pull_request?.html_url || "No URL"
+    const prAuthor = pull_request?.user?.login || "Unknown"
 
     const message = {
       blocks: [
@@ -94,15 +90,13 @@ async function notifySlackOnPR(githubPayload) {
   }
 }
 
-// Execute when run directly (not imported)
+// Execute when run directly
 if (process.env.GITHUB_EVENT_JSON) {
-  try {
-    const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
-    await notifySlackOnPR(payload)
-  } catch (error) {
+  const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
+  await notifySlackOnPR(payload).catch((error) => {
     console.error("✗ Error:", error.message)
     process.exit(1)
-  }
+  })
 }
 
 export default notifySlackOnPR
