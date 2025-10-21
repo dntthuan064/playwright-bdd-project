@@ -3,27 +3,22 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
-export default async function notifySlackOnPR(githubPayload) {
+async function notifySlackOnPR(githubPayload) {
   let url
   try {
     if (!githubPayload?.pull_request || !githubPayload?.repository) {
       throw new Error("Invalid payload: missing pull_request or repository")
     }
 
-    // Send notifications to a single channel which the user picks on installation
-    // Sending messages using Incoming Webhooks: https://api.slack.com/messaging/webhooks
-
-    // Do not store your slack webhook url in the source code, but pass your slack webhook url from environment variables
-    // SLACK_WEBHOOK_URL: Notify channel, e.g: aqa_test_channel
     url = process.env.SLACK_WEBHOOK_URL
     if (!url) {
       throw new Error("SLACK_WEBHOOK_URL environment variable is not set")
     }
-  
-    const pullRequest = githubPayload
-    const prTitle = pullRequest.title || "No Title"
-    const prUrl = pullRequest.html_url
-    const prAuthor = pullRequest.user?.login || "Unknown"
+
+    const { pull_request } = githubPayload
+    const prTitle = pull_request.title || "No Title"
+    const prUrl = pull_request.html_url
+    const prAuthor = pull_request.user?.login || "Unknown"
 
     const message = {
       blocks: [
@@ -93,14 +88,15 @@ export default async function notifySlackOnPR(githubPayload) {
     console.error("✗ Failed to send Slack notification:", error.message)
     throw error
   }
-
 }
 
 // Execute when run directly
 if (process.env.GITHUB_EVENT_JSON) {
   const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
-  notifySlackOnPR(payload).catch((error) => {
+  await notifySlackOnPR(payload).catch((error) => {
     console.error("✗ Error:", error.message)
     process.exit(1)
   })
 }
+
+export default notifySlackOnPR
