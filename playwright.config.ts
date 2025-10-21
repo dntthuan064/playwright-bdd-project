@@ -44,6 +44,29 @@ export default defineConfig({
       use: { ...devices["Desktop Safari"] },
     },
 
+    /* BrowserStack configurations */
+    ...(process.env.BROWSERSTACK_WS_ENDPOINT ? [
+      {
+        name: "browserstack-iphone",
+        use: {
+          ...devices["iPhone 15 Pro"],
+          connectOptions: {
+            wsEndpoint: process.env.BROWSERSTACK_WS_ENDPOINT,
+          },
+        },
+      },
+
+      {
+        name: "browserstack-android",
+        use: {
+          ...devices["Pixel 7"],
+          connectOptions: {
+            wsEndpoint: process.env.BROWSERSTACK_WS_ENDPOINT,
+          },
+        },
+      },
+    ] : []),
+
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',

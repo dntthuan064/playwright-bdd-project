@@ -1,0 +1,55 @@
+userName: YOUR_USERNAME
+accessKey: YOUR_ACCESS_KEY
+
+platforms:
+  # Desktop Browsers
+  - os: Windows
+    osVersion: 11
+    browserName: chrome
+    browserVersion: latest
+  - os: Windows
+    osVersion: 11
+    browserName: firefox
+    browserVersion: latest
+  - os: Windows
+    osVersion: 11
+    browserName: edge
+    browserVersion: latest
+  - os: OS X
+    osVersion: Ventura
+    browserName: playwright-webkit
+    browserVersion: latest
+  - os: OS X
+    osVersion: Ventura
+    browserName: chrome
+    browserVersion: latest
+  - os: OS X
+    osVersion: Ventura
+    browserName: firefox
+    browserVersion: latest
+  - os: OS X
+    osVersion: Sonoma
+    browserName: safari
+    browserVersion: latest
+  
+  # Mobile Devices - Android
+  - deviceName: Samsung Galaxy S23 Ultra
+    browserName: chrome
+    osVersion: 13.0
+  - deviceName: Google Pixel 7
+    browserName: chrome
+    osVersion: 13.0
+  - deviceName: OnePlus 9
+    browserName: chrome
+    osVersion: 12.0
+  
+  # Mobile Devices - iOS
+  - deviceName: iPhone 15 Pro
+    browserName: safari
+    osVersion: 17
+  - deviceName: iPhone 14
+    browserName: safari
+    osVersion: 16
+  - deviceName: iPad Pro 12.9 2022
+    browserName: safari
+    osVersion: 16 
