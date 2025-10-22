@@ -1,4 +1,4 @@
-# Playwright Project
+# Playwright Project TEST
 
 This project is an end-to-end (E2E) testing framework using Playwright and BDD (via playwright-bdd). It is structured for scalability, maintainability, and clarity, supporting feature-based test development.
 
