@@ -23,10 +23,7 @@ export default defineConfig({
   // Enhanced reporting configuration
   reporter: [
     ["html", { outputFolder: "reports/html", open: "never" }],
-    ["json", { outputFile: "reports/json/test-results.json" }],
-    ["junit", { outputFile: "reports/junit/test-results.xml" }],
     ["list"],
-    ...(process.env.CI ? [["github" as const, {}] as const] : []),
   ],
 
   use: {
