@@ -1,24 +1,24 @@
-import { IncomingWebhook } from "@slack/webhook"
-import dotenv from "dotenv"
+import { IncomingWebhook } from "@slack/webhook";
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 async function notifySlackOnPR(githubPayload) {
-  let url
+  let url;
   try {
     if (!githubPayload?.pull_request || !githubPayload?.repository) {
-      throw new Error("Invalid payload: missing pull_request or repository")
+      throw new Error("Invalid payload: missing pull_request or repository");
     }
 
-    url = process.env.SLACK_WEBHOOK_URL
+    url = process.env.SLACK_WEBHOOK_URL;
     if (!url) {
-      throw new Error("SLACK_WEBHOOK_URL environment variable is not set")
+      throw new Error("SLACK_WEBHOOK_URL environment variable is not set");
     }
 
-    const { pull_request } = githubPayload
-    const prTitle = pull_request?.title || "No Title"
-    const prUrl = pull_request?.html_url || "No URL"
-    const prAuthor = pull_request?.user?.login || "Unknown"
+    const { pull_request } = githubPayload;
+    const prTitle = pull_request?.title || "No Title";
+    const prUrl = pull_request?.html_url || "No URL";
+    const prAuthor = pull_request?.user?.login || "Unknown";
 
     const message = {
       blocks: [
@@ -26,42 +26,42 @@ async function notifySlackOnPR(githubPayload) {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `@here 🚀 *A new pull request has been created*`
-          }
+            text: `@here 🚀 *A new pull request has been created*`,
+          },
         },
         {
-          type: "divider"
-        },
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `*Title:* ${prTitle}`
-          }
+          type: "divider",
         },
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*URL:* <${prUrl}>`
-          }
+            text: `*Title:* ${prTitle}`,
+          },
         },
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*Author:* ${prAuthor}`
-          }
-        },
-        {
-          type: "divider"
+            text: `*URL:* <${prUrl}>`,
+          },
         },
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*Please help to review the changes* :thankyou2:`
-          }
+            text: `*Author:* ${prAuthor}`,
+          },
+        },
+        {
+          type: "divider",
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Please help to review the changes* :thankyou2:`,
+          },
         },
         {
           type: "actions",
@@ -71,32 +71,32 @@ async function notifySlackOnPR(githubPayload) {
               text: {
                 type: "plain_text",
                 text: "View Pull Request",
-                emoji: true
+                emoji: true,
               },
               url: prUrl,
-              style: "primary"
-            }
-          ]
-        }
-      ]
-    }
+              style: "primary",
+            },
+          ],
+        },
+      ],
+    };
 
-    const webhook = new IncomingWebhook(url)
-    await webhook.send(message)
-    console.log("✓ Slack notification sent successfully")
+    const webhook = new IncomingWebhook(url);
+    await webhook.send(message);
+    console.log("✓ Slack notification sent successfully");
   } catch (error) {
-    console.error("✗ Failed to send Slack notification:", error.message)
-    throw error
+    console.error("✗ Failed to send Slack notification:", error.message);
+    throw error;
   }
 }
 
 // Execute when run directly
 if (process.env.GITHUB_EVENT_JSON) {
-  const payload = JSON.parse(process.env.GITHUB_EVENT_JSON)
+  const payload = JSON.parse(process.env.GITHUB_EVENT_JSON);
   await notifySlackOnPR(payload).catch((error) => {
-    console.error("✗ Error:", error.message)
-    process.exit(1)
-  })
+    console.error("✗ Error:", error.message);
+    process.exit(1);
+  });
 }
 
-export default notifySlackOnPR
+export default notifySlackOnPR;
