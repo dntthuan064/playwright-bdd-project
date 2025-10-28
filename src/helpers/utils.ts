@@ -1,57 +1,36 @@
-import fs from "fs"
-import path from "path"
-
-import pkg from "lodash"
-import { DATA_DIR, DATA_PREFIX } from "./constant"
-import { DATA_PATHS } from "./enum"
-import { type CommonData } from "./types/common"
-import { TestDataNameUnknownError } from "./types/exception"
-import { PageObjectFixtures } from "./fixtures"
-
-/**
- * Get a page object from fixtures by key.
- * @param fixtures - The page object fixtures containing all available pages
- * @param key - The key to look up the page object
- * @returns The page object instance
- * @throws Error if no page object is found for the given key
- */
-export function getPageFromFixtures(fixtures: PageObjectFixtures, key: keyof PageObjectFixtures) {
-  const pageObject = fixtures[key]
-  if (!pageObject) {
-    const available = Object.keys(fixtures).join(", ")
-    throw new Error(`No page object found for fixture key: ${key}.\nAvailable: ${available}`)
-  }
-  return pageObject
-}
+import fs from "fs";
+import path from "path";
+import pkg from "lodash";
+import { DATA_DIR, DATA_PREFIX } from "../config/constants";
+import { DATA_PATHS } from "../config/enums";
+import { type CommonData } from "../types/common";
+import { TestDataNameUnknownError } from "../types/exception";
 
 /**
  * Load data with specified name.
- *
  * If the environment variable corresponding to the data name is set,
  * the data will be read from the environment variable (in JSON format, encoded by base64).
- *
  * Otherwise, the data will be read from the data file specified in DATA_PATHS.
  * @param name name of data defined in DATA_PATHS
  */
 export function loadData(name: keyof typeof DATA_PATHS) {
   if (!Object.keys(DATA_PATHS).includes(name)) {
-    throw new TestDataNameUnknownError(name)
+    throw new TestDataNameUnknownError(name);
   }
 
   // Corresponding environment variable
-  const dataEnvKey = DATA_PREFIX + name
+  const dataEnvKey = DATA_PREFIX + name;
 
   if (dataEnvKey in process.env) {
-    const dataContent = process.env[dataEnvKey]!.trim()
+    const dataContent = process.env[dataEnvKey]!.trim();
 
     if (dataContent !== "") {
-      return JSON.parse(Buffer.from(dataContent, "base64").toString("utf-8"))
+      return JSON.parse(Buffer.from(dataContent, "base64").toString("utf-8"));
     }
   }
 
-  const dataFullPath = path.join(DATA_DIR, DATA_PATHS[name])
-
-  return JSON.parse(fs.readFileSync(dataFullPath).toString("utf-8"))
+  const dataFullPath = path.join(DATA_DIR, DATA_PATHS[name]);
+  return JSON.parse(fs.readFileSync(dataFullPath).toString("utf-8"));
 }
 
 /**
@@ -61,8 +40,8 @@ export function loadData(name: keyof typeof DATA_PATHS) {
  * @returns data content
  */
 export function getTestDataByKey(testData: Record<string, object>, key: string): string {
-  const { get } = pkg
-  return get(testData, key) as unknown as string
+  const { get } = pkg;
+  return get(testData, key) as unknown as string;
 }
 
 /**
@@ -72,8 +51,8 @@ export function getTestDataByKey(testData: Record<string, object>, key: string):
  * @returns data content
  */
 export function getDataByKey(commonData: CommonData, key: string): string {
-  const { get } = pkg
-  return get(commonData, key) as unknown as string
+  const { get } = pkg;
+  return get(commonData, key) as unknown as string;
 }
 
 /**
@@ -82,7 +61,7 @@ export function getDataByKey(commonData: CommonData, key: string): string {
  * @returns URL after trimming
  */
 export function trimUrl(url: string) {
-  return url.replace(/\/+$/, "")
+  return url.replace(/\/+$/, "");
 }
 
 /**
@@ -92,7 +71,7 @@ export function trimUrl(url: string) {
  * @returns Random integer in range [min, max]
  */
 export function randomIntInRange(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min)
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 /**
@@ -103,38 +82,45 @@ export function randomIntInRange(min: number, max: number) {
  */
 export async function repeatAsync(times: number, func: () => Promise<void>) {
   for (let i = 0; i < times; i++) {
-    await func()
+    await func();
   }
 }
 
+/**
+ * Shorten wallet address for display
+ */
 export const shortenAddress = (address: string, length = 4): string => {
   if (!address) {
-    return ""
+    return "";
   }
+  return `${address.slice(0, length + 2)}...${address.slice(-length)}`;
+};
 
-  return `${address.slice(0, length + 2)}...${address.slice(-length)}`
-}
-
+/**
+ * Parse JSON file
+ */
 export const parseFileToJson = (filePath: string) => {
-  const fileContent = fs.readFileSync(filePath, "utf-8")
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  return JSON.parse(fileContent);
+};
 
-  return JSON.parse(fileContent)
-}
-
+/**
+ * Throw expression helper
+ */
 export function throwExpression(errorMessage: string): never {
-  throw new Error(errorMessage)
+  throw new Error(errorMessage);
 }
 
-// Define a function that appends a subdomain to a URL
+/**
+ * Append a subdomain to a URL
+ */
 export const appendSubdomain = (subdomain: string, url: string) => {
-  const urlObj = new URL(url)
-  const currentHostname = urlObj.hostname
-  const newHostname = `${subdomain}.${currentHostname}`
-
-  urlObj.hostname = newHostname
-
-  return urlObj.toString()
-}
+  const urlObj = new URL(url);
+  const currentHostname = urlObj.hostname;
+  const newHostname = `${subdomain}.${currentHostname}`;
+  urlObj.hostname = newHostname;
+  return urlObj.toString();
+};
 
 /**
  * Helper function to retrieve nested values from an object
@@ -143,7 +129,7 @@ export const appendSubdomain = (subdomain: string, url: string) => {
  * @returns The value of the nested property, or `undefined` if the property does not exist
  */
 export function getNestedValue(obj: any, key: string): any {
-  return key.split(".").reduce((o, k) => (o || {})[k], obj)
+  return key.split(".").reduce((o, k) => (o || {})[k], obj);
 }
 
 /**
@@ -154,20 +140,18 @@ export function getNestedValue(obj: any, key: string): any {
  */
 export function extractKeys(obj: any, keys: string[]): Record<string, any> {
   return keys.reduce<Record<string, any>>((acc, key) => {
-    const value = getNestedValue(obj, key)
+    const value = getNestedValue(obj, key);
     if (value !== undefined) {
-      acc[key] = value
+      acc[key] = value;
     }
-    return acc
-  }, {})
+    return acc;
+  }, {});
 }
 
 /**
  * Converts a date string from the format "Month/DD/YYYY" to "MM/DD/YYYY".
- *
  * @param dateStr - The date string to convert in format "Month/DD/YYYY"
  * @returns The formatted date string in "MM/DD/YYYY" format
- *
  * @example
  * convertDateString("January/01/2025") // Returns "01/01/2025"
  * convertDateString("December/25/2025") // Returns "12/25/2025"
@@ -185,11 +169,41 @@ export function convertDateString(dateStr: string): string {
     September: "09",
     October: "10",
     November: "11",
-    December: "12"
-  }
-  const [month, day, year] = dateStr.split("/")
-  const formattedMonth = monthMap[month]
-  const formattedDay = day.padStart(2, "0")
+    December: "12",
+  };
+  const [month, day, year] = dateStr.split("/");
+  const formattedMonth = monthMap[month];
+  const formattedDay = day.padStart(2, "0");
+  return `${formattedMonth}/${formattedDay}/${year}`;
+}
 
-  return `${formattedMonth}/${formattedDay}/${year}`
+/**
+ * Sleep for a specified duration
+ * @param ms Duration in milliseconds
+ */
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Generate random string
+ * @param length Length of the string
+ */
+export function randomString(length = 10): string {
+  return Math.random()
+    .toString(36)
+    .substring(2, length + 2);
+}
+
+/**
+ * Format timestamp to readable date
+ */
+export function formatDate(timestamp: number | Date, format = "ISO"): string {
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+
+  if (format === "ISO") {
+    return date.toISOString();
+  }
+
+  return date.toLocaleString();
 }

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+reports/
+test-results/
+playwright-report/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.md
+

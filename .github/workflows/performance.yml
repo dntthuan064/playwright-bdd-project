@@ -1,0 +1,102 @@
+name: Performance Tests
+
+on:
+  schedule:
+    # Run performance tests weekly (every Monday at 2 AM UTC)
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test to run'
+        required: true
+        default: 'load'
+        type: choice
+        options:
+          - load
+          - stress
+          - spike
+
+env:
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+jobs:
+  performance-test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run Load Test
+        if: github.event.inputs.test_type == 'load' || github.event_name == 'schedule'
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+        run: k6 run performance/scripts/load-test.js
+      
+      - name: Run Stress Test
+        if: github.event.inputs.test_type == 'stress'
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+        run: k6 run performance/scripts/stress-test.js
+      
+      - name: Run Spike Test
+        if: github.event.inputs.test_type == 'spike'
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+        run: k6 run performance/scenarios/spike-test.js
+      
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: performance/reports/
+          retention-days: 30
+      
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 📊 Performance Test Results\n\n';
+            
+            try {
+              const results = JSON.parse(fs.readFileSync('performance/reports/load-test-summary.json', 'utf8'));
+              const metrics = results.metrics;
+              
+              comment += '### Key Metrics\n\n';
+              comment += '| Metric | Value |\n';
+              comment += '|--------|-------|\n';
+              
+              if (metrics.http_req_duration) {
+                comment += `| Response Time (p95) | ${metrics.http_req_duration.values.p95.toFixed(2)}ms |\n`;
+                comment += `| Response Time (p99) | ${metrics.http_req_duration.values.p99.toFixed(2)}ms |\n`;
+              }
+              
+              if (metrics.http_req_failed) {
+                const failRate = (metrics.http_req_failed.values.rate * 100).toFixed(2);
+                comment += `| Error Rate | ${failRate}% |\n`;
+              }
+              
+              comment += '\n✅ Performance test completed successfully!';
+            } catch (error) {
+              comment += '⚠️ Could not parse performance results\n';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
