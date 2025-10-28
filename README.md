@@ -67,7 +67,7 @@ A comprehensive, scalable test automation framework built with Playwright, suppo
 
 ## 📁 Project Structure
 
-```
+```md
 playwright-test-framework/
 ├── .github/
 │   └── workflows/

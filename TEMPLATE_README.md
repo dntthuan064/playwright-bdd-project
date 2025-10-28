@@ -248,7 +248,7 @@ npm run test:report
 
 #### Test Organization
 
-```
+```md
 tests/
 ├── e2e/
 │   ├── auth/
