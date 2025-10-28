@@ -5,6 +5,11 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 env:
   E2E_BASE_URL: ${{ vars.BASE_URL }}
   API_BASE_URL: ${{ vars.API_BASE_URL }}
