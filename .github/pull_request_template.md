@@ -8,6 +8,7 @@ Describe what is currently not working as expected or what feature is missing. -
 ### Solution
 <!--- Describe the architectural or design decisions you made while implementing the changes.
 Explain the thought process behind your approach and how it aligns with best practices or existing patterns in the codebase. --->
+---
 
 ## Types of Changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply --->
