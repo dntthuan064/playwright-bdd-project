@@ -6,8 +6,8 @@ on:
     branches: [main, master]
 
 env:
-  E2E_BASE_URL: ${{ vars.BASE_URL || 'https://demo.playwright.dev' }}
-  API_BASE_URL: ${{ vars.API_BASE_URL || 'https://reqres.in/api' }}
+  E2E_BASE_URL: ${{ vars.BASE_URL }}
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
 
 jobs:
   test:

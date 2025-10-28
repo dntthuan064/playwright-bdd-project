@@ -17,7 +17,7 @@ on:
           - spike
 
 env:
-  API_BASE_URL: ${{ vars.API_BASE_URL || 'https://reqres.in/api' }}
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
 
 jobs:
   performance-test:
