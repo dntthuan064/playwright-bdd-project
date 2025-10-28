@@ -1,19 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
-import { defineBddConfig } from "playwright-bdd";
+import path from "path";
+import dotenv from "dotenv";
 
-const testDir = defineBddConfig({
-  features: "./src/features/**/*.feature",
-  steps: [
-    "./src/features/**/*.step.ts",
-    "./src/common/fixtures.ts",
-  ]
-});
+// Load environment variables from .env file
+dotenv.config();
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright Test Configuration
+ * See https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir,
+  testDir: "./tests",
   fullyParallel: true,
   timeout: 300 * 1000,
   expect: {
@@ -21,10 +18,33 @@ export default defineConfig({
   },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  workers: process.env.CI ? 4 : undefined,
+
+  // Enhanced reporting configuration
+  reporter: [
+    ["html", { outputFolder: "reports/html", open: "never" }],
+    ["json", { outputFile: "reports/json/test-results.json" }],
+    ["junit", { outputFile: "reports/junit/test-results.xml" }],
+    ["list"],
+    ...(process.env.CI ? [["github" as const, {}] as const] : []),
+  ],
+
   use: {
+    // Base URL for navigation
+    baseURL: process.env.E2E_BASE_URL,
+
+    // Capture trace on first retry
     trace: "on-first-retry",
+
+    // Capture screenshot on failure
+    screenshot: "only-on-failure",
+
+    // Capture video on retry
+    video: "retain-on-failure",
+
+    // Test timeout
+    actionTimeout: 30000,
+    navigationTimeout: 60000,
   },
 
   /* Configure projects for major browsers */
@@ -32,19 +52,31 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: /.*\.api\.spec\.ts/, // Skip API tests in browser projects
     },
 
     {
       name: "firefox",
       use: { ...devices["Desktop Firefox"] },
+      testIgnore: /.*\.api\.spec\.ts/, // Skip API tests in browser projects
     },
 
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
+      testIgnore: /.*\.api\.spec\.ts/, // Skip API tests in browser projects
     },
 
-    /* Test against mobile viewports. */
+    // API Testing - runs without browser
+    {
+      name: "api",
+      testMatch: /.*\.api\.spec\.ts/,
+      use: {
+        baseURL: process.env.API_BASE_URL,
+      },
+    },
+
+    /* Test against mobile viewports */
     // {
     //   name: 'Mobile Chrome',
     //   use: { ...devices['Pixel 5'] },
@@ -54,7 +86,7 @@ export default defineConfig({
     //   use: { ...devices['iPhone 12'] },
     // },
 
-    /* Test against branded browsers. */
+    /* Test against branded browsers */
     // {
     //   name: 'Microsoft Edge',
     //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
@@ -64,6 +96,9 @@ export default defineConfig({
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
   ],
+
+  /* Output directories */
+  outputDir: "test-results/",
 
   /* Run your local dev server before starting the tests */
   // webServer: {
