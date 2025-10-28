@@ -1,53 +1,44 @@
 {
-  "name": "playwright-project",
+  "name": "playwright-test-framework",
   "version": "1.0.0",
-  "description": "Playwright with Cucumber project",
+  "description": "Comprehensive Playwright test framework with E2E, API testing, and K6 performance testing",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "e2e": "yarn bddgen && yarn playwright test",
-    "e2e_weekly": "yarn bddgen --tags \"not @REQUIRED_QA_ALLOWED and not ${SKIP_TAG:-@SKIP_TAG}\" && yarn playwright test",
-    "e2e:local": "yarn bddgen && yarn env-cmd -f .env.local playwright test",
-    "e2e:tag": "yarn bddgen --tags \"${E2E_TAGS}\" && yarn playwright test",
-    "e2e:tag-gen": "yarn bddgen --tags \"${E2E_TAGS} and not ${SKIP_TAG:-@SKIP_TAG}\"",
-    "e2e:tag-local": "yarn bddgen --tags \"${E2E_TAGS}\" && yarn env-cmd -f .env.local playwright test",
-    "e2e:ui": "yarn bddgen --tags \"${E2E_TAGS}\" && yarn env-cmd -f .env playwright test --ui",
-    "e2e:debug": "yarn bddgen --tags \"${E2E_TAGS}\" && yarn env-cmd -f .env playwright test --debug",
-    "e2e:report": "yarn playwright show-report",
-    "fix": "prettier -w \"{src,mocks,scripts}/**/*.{ts,tsx,js}\"",
+    "test": "playwright test",
+    "test:e2e": "playwright test tests/e2e",
+    "test:api": "playwright test tests/api",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "perf:load": "k6 run performance/scripts/load-test.js",
+    "perf:stress": "k6 run performance/scripts/stress-test.js",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "lint": "tsc --noEmit",
     "pre-commit": "lint-staged",
-    "typecheck": "tsc --noEmit",
-    "pre-push": "yarn fix && yarn typecheck"
+    "pre-push": "npm run format && npm run lint",
+    "postinstall": "playwright install"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^11.3.0",
     "@playwright/test": "^1.52.0",
-    "@types/lodash": "^4.17.17"
-  },
-  "dependencies": {
-    "@slack/webhook": "^7.0.6",
+    "@types/lodash": "^4.17.17",
     "@types/node": "^22.15.21",
-    "dotenv": "^16.5.0",
-    "env-cmd": "^10.1.0",
     "lint-staged": "^16.1.0",
-    "lodash": "^4.17.21",
-    "playwright-bdd": "^8.2.1",
-    "playwright-project": "file:",
     "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.5.0",
+    "lodash": "^4.17.21"
   },
-  "packageManager": "yarn@4.9.1"
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
 }

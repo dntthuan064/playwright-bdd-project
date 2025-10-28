@@ -1,23 +1,26 @@
-import { expect, FrameLocator, Page } from "@playwright/test"
-import pkg from "lodash"
+import { expect, FrameLocator, Page } from "@playwright/test";
+import pkg from "lodash";
 
-import { ENV_KEYS } from "../common/enum"
-import { ENV } from "../common/constant"
-import { appendSubdomain, extractKeys } from "../common/utils"
+import { ENV_KEYS } from "../config/enums";
+import { ENV } from "../config/constants";
+import { appendSubdomain, extractKeys } from "../helpers/utils";
 
 export class BasePage {
-  protected subDomain?: string | null = null
-  private baseUrl = ENV[ENV_KEYS.BASE_URL]
-  private portalUrl = ENV[ENV_KEYS.PORTAL_URL]
-  private isLocal: boolean = ENV[ENV_KEYS.LOCAL] === "true"
-  private localUrl = ENV[ENV_KEYS.LOCAL_URL]
-  private path: string
+  protected subDomain?: string | null = null;
+  private baseUrl = ENV[ENV_KEYS.BASE_URL];
+  private portalUrl = ENV[ENV_KEYS.PORTAL_URL];
+  private isLocal: boolean = ENV[ENV_KEYS.LOCAL] === "true";
+  private localUrl = ENV[ENV_KEYS.LOCAL_URL];
+  private path: string;
 
   constructor(
     protected page: Page,
     path: string
   ) {
-    this.path = path
+    this.path = path;
+    // Use Playwright's baseURL from the page context
+    // This automatically uses the baseURL from playwright.config.ts
+    // const contextBaseURL = (this.page.context() as any)?.["_options"]?.baseURL;
   }
 
   /**
@@ -27,47 +30,47 @@ export class BasePage {
    * @returns {Page} Playwright page
    */
   getPage(): Page {
-    return this.page
+    return this.page;
   }
 
   public getUrl(): string {
     if (this.subDomain) {
       // Replace localUrl with subDomain.portalUrl if isLocal === 'true'
       if (this.isLocal) {
-        return new URL(this.path, this.localUrl).toString()
+        return new URL(this.path, this.localUrl).toString();
       } else {
-        return new URL(this.path, appendSubdomain(this.subDomain, this.portalUrl)).toString()
+        return new URL(this.path, appendSubdomain(this.subDomain, this.portalUrl)).toString();
       }
     }
-    return new URL(this.path, this.baseUrl).toString()
+    return new URL(this.path, this.baseUrl).toString();
   }
 
   /**
    * Open current page.
    */
   public async goto() {
-    await this.page.goto(this.getUrl())
+    await this.page.goto(this.getUrl());
   }
 
   /**
    * Go back to previous page
    */
   async goBack() {
-    await this.page.goBack()
+    await this.page.goBack();
   }
 
   /**
    * Go forward to next page
    */
   async goForward() {
-    await this.page.goForward()
+    await this.page.goForward();
   }
 
   /**
    * Close current tab
    */
   async close() {
-    await this.page.close()
+    await this.page.close();
   }
 
   /**
@@ -75,7 +78,7 @@ export class BasePage {
    * @param index index of the tab
    */
   async closeByIndex(index: number) {
-    await this.page.context().pages()[index].close()
+    await this.page.context().pages()[index].close();
   }
 
   /**
@@ -83,7 +86,7 @@ export class BasePage {
    * @param locator Locator of the element
    */
   getByLocator(locator: string) {
-    this.page.locator(locator)
+    this.page.locator(locator);
   }
 
   /**
@@ -91,7 +94,7 @@ export class BasePage {
    * @param timeout timeout in milliseconds
    */
   async waitForTimeout(timeout: number) {
-    await this.page.waitForTimeout(timeout)
+    await this.page.waitForTimeout(timeout);
   }
 
   /**
@@ -100,7 +103,7 @@ export class BasePage {
    * @param code 200 success
    */
   async waitForResponse(url: string, code = 200) {
-    await this.page.waitForResponse((response) => response.url().includes(url) && response.status() === code)
+    await this.page.waitForResponse((response) => response.url().includes(url) && response.status() === code);
   }
 
   /**
@@ -108,7 +111,7 @@ export class BasePage {
    * @param label Label of the element
    */
   async hoverByLabel(label: string) {
-    await this.page.getByLabel(label).hover()
+    await this.page.getByLabel(label).hover();
   }
 
   /**
@@ -117,7 +120,7 @@ export class BasePage {
    * @param name Accessible name of the element
    */
   async hoverByRole(role: Parameters<Page["getByRole"]>[0], name: string) {
-    await this.page.getByRole(role, { name, exact: true }).hover()
+    await this.page.getByRole(role, { name, exact: true }).hover();
   }
 
   /**
@@ -125,7 +128,7 @@ export class BasePage {
    * @param locator Locator of the element
    */
   async hoverByLocator(locator: string) {
-    await this.page.locator(locator).hover()
+    await this.page.locator(locator).hover();
   }
 
   /**
@@ -133,9 +136,9 @@ export class BasePage {
    * @param label Label of the element
    */
   async copyByLabel(label: string) {
-    const textContent = await this.page.getByLabel(label).textContent()
+    const textContent = await this.page.getByLabel(label).textContent();
 
-    await this.page.evaluate((textContent) => navigator.clipboard.writeText(textContent ?? ""), textContent)
+    await this.page.evaluate((textContent) => navigator.clipboard.writeText(textContent ?? ""), textContent);
   }
 
   /**
@@ -143,9 +146,9 @@ export class BasePage {
    * @param locator Locator of the element
    */
   async copyByLocator(locator: string) {
-    const textContent = await this.page.locator(locator).textContent()
+    const textContent = await this.page.locator(locator).textContent();
 
-    await this.page.evaluate((textContent) => navigator.clipboard.writeText(textContent ?? ""), textContent)
+    await this.page.evaluate((textContent) => navigator.clipboard.writeText(textContent ?? ""), textContent);
   }
 
   /**
@@ -156,8 +159,8 @@ export class BasePage {
     await this.page
       .evaluate(() => navigator.clipboard.readText())
       .then(async (textContent) => {
-        await this.page.getByLabel(label).fill(textContent)
-      })
+        await this.page.getByLabel(label).fill(textContent);
+      });
   }
 
   /**
@@ -168,8 +171,8 @@ export class BasePage {
     await this.page
       .evaluate(() => navigator.clipboard.readText())
       .then(async (textContent) => {
-        await this.page.getByRole("textbox", { name }).fill(textContent)
-      })
+        await this.page.getByRole("textbox", { name }).fill(textContent);
+      });
   }
 
   /**
@@ -180,8 +183,8 @@ export class BasePage {
     await this.page
       .evaluate(() => navigator.clipboard.readText())
       .then(async (textContent) => {
-        await this.page.getByPlaceholder(placeholder, { exact: true }).fill(textContent)
-      })
+        await this.page.getByPlaceholder(placeholder, { exact: true }).fill(textContent);
+      });
   }
 
   /**
@@ -193,8 +196,8 @@ export class BasePage {
     await this.page
       .evaluate(() => navigator.clipboard.readText())
       .then(async (textContent) => {
-        await this.page.locator(locator).nth(index).fill(textContent)
-      })
+        await this.page.locator(locator).nth(index).fill(textContent);
+      });
   }
 
   /**
@@ -206,14 +209,14 @@ export class BasePage {
     await this.page
       .getByText(text, { exact: true })
       .nth(index ?? 0)
-      .click()
+      .click();
   }
 
   async clickByTextInFrame(frame: FrameLocator, text: string, index?: number) {
     await frame
       .getByText(text, { exact: true })
       .nth(index ?? 0)
-      .click()
+      .click();
   }
 
   /**
@@ -224,28 +227,28 @@ export class BasePage {
    * @param index - Index of the element if multiple elements match. Defaults to 0.
    */
   async clickByRole(role: Parameters<Page["getByRole"]>[0], name: string, exact: boolean = true, index?: number) {
-    const selectedIndex = index ?? 0
-    await this.page.getByRole(role, { name, exact }).nth(selectedIndex).click()
+    const selectedIndex = index ?? 0;
+    await this.page.getByRole(role, { name, exact }).nth(selectedIndex).click();
   }
 
   async clickByRoleInFrame(frame: FrameLocator, role: Parameters<Page["getByRole"]>[0], name: string, index?: number) {
-    const selectedIndex = index ?? 0
-    await frame.getByRole(role, { name }).nth(selectedIndex).click()
+    const selectedIndex = index ?? 0;
+    await frame.getByRole(role, { name }).nth(selectedIndex).click();
   }
 
   async waitForRoleVisible(role: Parameters<Page["getByRole"]>[0], name?: string, exact = true) {
-    await this.page.getByRole(role, { name, exact }).waitFor()
+    await this.page.getByRole(role, { name, exact }).waitFor();
   }
 
   async waitForLocatorVisible(locator: string) {
-    await this.page.locator(locator).waitFor({ state: "visible" })
+    await this.page.locator(locator).waitFor({ state: "visible" });
   }
 
   async waitForRoleWithIndexVisible(role: Parameters<Page["getByRole"]>[0], name?: string, index?: number) {
     await this.page
       .getByRole(role, { name, exact: true })
       .nth(index ?? 0)
-      .waitFor()
+      .waitFor();
   }
 
   /**
@@ -255,8 +258,8 @@ export class BasePage {
    * @param options - options for the click() method
    */
   async clickByLocator(locator: string, index?: number, options?: Parameters<typeof this.page.click>[1]) {
-    const selectedIndex = index ?? 0
-    await this.page.locator(locator).nth(selectedIndex).click(options)
+    const selectedIndex = index ?? 0;
+    await this.page.locator(locator).nth(selectedIndex).click(options);
   }
 
   /**
@@ -270,7 +273,7 @@ export class BasePage {
     await frame
       .locator(locator)
       .nth(index ?? 0)
-      .click()
+      .click();
   }
 
   /**
@@ -279,7 +282,7 @@ export class BasePage {
    * @param force - Whether to force the click (default is false)
    */
   async clickByLabel(label: string, force: boolean = false): Promise<void> {
-    await this.page.getByLabel(label, { exact: true }).click({ force })
+    await this.page.getByLabel(label, { exact: true }).click({ force });
   }
   /**
    * Fill an element by its role and name.
@@ -289,8 +292,8 @@ export class BasePage {
    * @param index index of selector
    */
   async fillByRole(role: Parameters<Page["getByRole"]>[0], name: string, value: string, index?: number) {
-    const selectedIndex = index ?? 0
-    await this.page.getByRole(role, { name, exact: true }).nth(selectedIndex).fill(value)
+    const selectedIndex = index ?? 0;
+    await this.page.getByRole(role, { name, exact: true }).nth(selectedIndex).fill(value);
   }
 
   /**
@@ -299,21 +302,21 @@ export class BasePage {
    * @param value value to be filled
    */
   async fillByRoleTextbox(name: string, value: string) {
-    await this.page.getByRole("textbox", { name }).fill(value)
+    await this.page.getByRole("textbox", { name }).fill(value);
   }
 
   /**
    * Fill a text box by exact placeholder.
    */
   async fillByPlaceholder(placeholder: string, value: string) {
-    await this.page.getByPlaceholder(placeholder, { exact: true }).fill(value)
+    await this.page.getByPlaceholder(placeholder, { exact: true }).fill(value);
   }
 
   /**
    * Fill a text box by exact placeholder.
    */
   async fillByExactPlaceholder(placeholder: string, value: string, exact = true) {
-    await this.page.getByPlaceholder(placeholder, { exact: exact }).fill(value)
+    await this.page.getByPlaceholder(placeholder, { exact: exact }).fill(value);
   }
 
   /**
@@ -327,7 +330,7 @@ export class BasePage {
       await this.page
         .locator(locator)
         .nth(index ?? 0)
-        .fill(value)
+        .fill(value);
     }
   }
 
@@ -335,7 +338,7 @@ export class BasePage {
     await frame
       .locator(locator)
       .nth(index ?? 0)
-      .fill(value)
+      .fill(value);
   }
 
   /**
@@ -344,7 +347,7 @@ export class BasePage {
    * @param option option to be selected
    */
   async selectOptionByLabel(label: string, option: string) {
-    await this.page.getByLabel(label, { exact: true }).selectOption(option)
+    await this.page.getByLabel(label, { exact: true }).selectOption(option);
   }
 
   /**
@@ -353,7 +356,7 @@ export class BasePage {
    * @param option option to be selected
    */
   async selectOptionByText(text: string, option: string) {
-    await this.page.getByText(text, { exact: true }).selectOption(option)
+    await this.page.getByText(text, { exact: true }).selectOption(option);
   }
 
   /**
@@ -362,13 +365,13 @@ export class BasePage {
    * @param option - The option to be selected. This can be a string, an array of strings, or an object that matches the parameters of the `selectOption` method from the `Page` class
    */
   async selectOptionByLocator(locator: string, value: Parameters<Page["selectOption"]>[0], index?: number) {
-    await this.page.locator(locator).selectOption(value)
+    await this.page.locator(locator).selectOption(value);
   }
 
   async selectOption(locator: string, option: string, index?: number) {
-    const selectedIndex = index ?? 0
-    await this.clickByLocator(locator, selectedIndex)
-    await this.clickByLabel(option)
+    const selectedIndex = index ?? 0;
+    await this.clickByLocator(locator, selectedIndex);
+    await this.clickByLabel(option);
   }
 
   /**
@@ -376,9 +379,9 @@ export class BasePage {
    * @param text label of the element
    */
   async countByText(text: string): Promise<number> {
-    const allElement = await this.page.getByText(text, { exact: true }).all()
+    const allElement = await this.page.getByText(text, { exact: true }).all();
 
-    return allElement.length
+    return allElement.length;
   }
 
   /**
@@ -388,33 +391,33 @@ export class BasePage {
    * @returns A promise that resolves to the status of the feature flag as a boolean, or null if the key is not found.
    */
   async checkFeatureFlagIsEnabled(endpoint: string, key: string): Promise<boolean | null> {
-    const { get } = pkg
+    const { get } = pkg;
     return new Promise((resolve, reject) => {
       this.page.on("response", async (response) => {
         if (response.url().includes(endpoint)) {
           try {
-            const responseBody = await response.json()
-            const featureFlags = responseBody.data || responseBody
-            const featureFlag = featureFlags.find((flag: { key: string }) => flag.key === key)
+            const responseBody = await response.json();
+            const featureFlags = responseBody.data || responseBody;
+            const featureFlag = featureFlags.find((flag: { key: string }) => flag.key === key);
 
             if (featureFlag) {
-              const isEnabled = Boolean(featureFlag.enabled)
+              const isEnabled = Boolean(featureFlag.enabled);
 
-              console.log(`${key} - "enabled": ${isEnabled}`)
-              resolve(featureFlag.enabled)
+              console.log(`${key} - "enabled": ${isEnabled}`);
+              resolve(featureFlag.enabled);
             } else {
-              console.error(`${key} not found`)
-              resolve(null)
+              console.error(`${key} not found`);
+              resolve(null);
             }
           } catch (error) {
-            console.error("Failed to parse response body:", error)
-            reject(new Error(get(error, "message")))
+            console.error("Failed to parse response body:", error);
+            reject(new Error(get(error, "message")));
           }
         }
-      })
+      });
       // Wait for the API response
-      this.page.waitForResponse((response) => response.url().includes(endpoint))
-    })
+      this.page.waitForResponse((response) => response.url().includes(endpoint));
+    });
   }
 
   /**
@@ -428,8 +431,8 @@ export class BasePage {
    */
   async selectComboboxOptions(options: string[]): Promise<void> {
     for (let i = 0; i < options.length; i++) {
-      await this.clickByRole("combobox", "", false, i)
-      await this.clickByRole("option", options[i])
+      await this.clickByRole("combobox", "", false, i);
+      await this.clickByRole("option", options[i]);
     }
   }
 
@@ -440,7 +443,7 @@ export class BasePage {
    * @param index Optional index if multiple elements match the selector (defaults to 0)
    */
   async toHaveValue(selector: string, value: string, index?: number) {
-    await expect(this.page.locator(selector).nth(index ?? 0)).toHaveValue(value)
+    await expect(this.page.locator(selector).nth(index ?? 0)).toHaveValue(value);
   }
 
   /**
@@ -450,7 +453,7 @@ export class BasePage {
    * @param value Expected value of the attribute
    */
   async toHaveAttribute(selector: string, attributeName: string, value: string) {
-    await expect(this.page.locator(selector)).toHaveAttribute(attributeName, value)
+    await expect(this.page.locator(selector)).toHaveAttribute(attributeName, value);
   }
 
   /**
@@ -460,8 +463,8 @@ export class BasePage {
    * @param index Optional index if multiple elements match the selector (defaults to 0)
    */
   async toHaveTextFromSelection(selector: string, text: string, index?: number) {
-    const elementIndex = index ?? 0
-    await expect(this.page.locator(selector).nth(elementIndex)).toHaveText(text)
+    const elementIndex = index ?? 0;
+    await expect(this.page.locator(selector).nth(elementIndex)).toHaveText(text);
   }
 
   /**
@@ -471,8 +474,8 @@ export class BasePage {
    * @param index Optional index if multiple elements match the selector (defaults to 0)
    */
   async toContainText(selector: string, text: string, index?: number) {
-    const elementIndex = index ?? 0
-    await expect(this.page.locator(selector).nth(elementIndex)).toContainText(text)
+    const elementIndex = index ?? 0;
+    await expect(this.page.locator(selector).nth(elementIndex)).toContainText(text);
   }
 
   // Change `assertFormSelectedOptions()` to avoid "for statement not loop" error
@@ -490,7 +493,7 @@ export class BasePage {
           options[i]
         )
       )
-    )
+    );
   }
 
   /**
@@ -506,25 +509,25 @@ export class BasePage {
   ): Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
       this.page.on("response", async (response) => {
-        if (!response.url().includes(endpoint)) return
+        if (!response.url().includes(endpoint)) return;
         try {
-          const responseBody = await response.json()
-          const extractedData = extractKeys(responseBody, keys)
+          const responseBody = await response.json();
+          const extractedData = extractKeys(responseBody, keys);
 
           if (Object.keys(extractedData).length === 0) {
-            return reject(new Error("No specified keys found in the response"))
+            return reject(new Error("No specified keys found in the response"));
           }
-          resolve(extractedData)
+          resolve(extractedData);
         } catch (error) {
-          reject(new Error(`Failed to parse response: ${error}`))
+          reject(new Error(`Failed to parse response: ${error}`));
         }
-      })
+      });
 
       // Wait for the specific response
       this.page
         .waitForResponse((response) => response.url().includes(endpoint))
-        .catch(() => reject(new Error("Something went wrong, prefer base.page.ts:590")))
-    })
+        .catch(() => reject(new Error("Something went wrong, prefer base.page.ts:590")));
+    });
   }
 
   /**
@@ -536,14 +539,14 @@ export class BasePage {
    */
   async getFrameByIndex(locator: string, index: number = 0, attribute: string = "name") {
     // Locate iframe by index
-    const iframeLocator = this.page.locator(locator).nth(index)
+    const iframeLocator = this.page.locator(locator).nth(index);
     // Retrieve the specified attribute from iframe
-    const attributeValue = await iframeLocator.getAttribute(attribute)
+    const attributeValue = await iframeLocator.getAttribute(attribute);
     // Return iframe locator
-    return this.page.frameLocator(`iframe[${attribute}="${attributeValue}"]`)
+    return this.page.frameLocator(`iframe[${attribute}="${attributeValue}"]`);
   }
 
   setPath(path: string) {
-    this.path = path
+    this.path = path;
   }
 }
